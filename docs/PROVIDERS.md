@@ -411,15 +411,30 @@ Other providers in this guide (FLUX, Kling, etc.) are single fixed models behind
 
 Because the underlying model varies, the right Layer-3 prompting skill also varies. All three tools expose `required_agent_skills(model_id)` — call it before building `inputs` to know which prompting guide applies (e.g. a `model_id` containing `"flux"` maps to the existing `flux-best-practices` / `bfl-api` skills; `"ace-step"` maps to `runcomfy-music` + `acestep`; `"music-generation"` maps to `runcomfy-music` + `music`). An empty result means no matching skill exists yet for that model family; check the model's own page on runcomfy.com/models regardless.
 
-#### Music model_ids
+#### Known model_ids
 
-Two RunComfy-hosted music models are documented in `.agents/skills/runcomfy-music/SKILL.md`:
+RunComfy hosts thousands of models and the catalog changes constantly, so this is **not**
+exhaustive — it's a starting point of model_ids confirmed (by checking the model's own page) at
+the time this table was last verified. **The literal `model_id` is the identifier printed on the
+model's own page — it does not always match the page's URL slug** (e.g. the Seedance 2.0 Pro page
+lives at `runcomfy.com/models/bytedance/seedance-v2/pro` but its documented model_id is
+`bytedance/seedance-2.0/pro`). Always confirm on [runcomfy.com/models](https://www.runcomfy.com/models)
+before a paid run, especially for any model_id not in this table.
 
-- `acestep-ai/ace-step-1.5/text-to-audio` — open-source ACE-Step 1.5, $0.0003/sec of output
-- `elevenlabs/elevenlabs/music-generation` — ElevenLabs Music API via RunComfy, $0.0083/sec of output
+| Category | model_id | Notes / pricing |
+|---|---|---|
+| Image | `openai/gpt-image-2/text-to-image` | $0.01-$0.66/image by quality+resolution tier |
+| Image | `blackforestlabs/flux-2/dev/text-to-image` | Free during promo; normally $0.012/image |
+| Video | `google-deepmind/veo-3-1/image-to-video` | $0.20/sec (no audio), $0.40/sec (with audio) |
+| Video | `kling/kling-video-o3/4K/image-to-video` | $0.42/sec |
+| Video | `bytedance/seedance-2.0/pro` | Cinematic 2K text-to-video with lip-sync |
+| Music | `acestep-ai/ace-step-1.5/text-to-audio` | Open-source ACE-Step 1.5, $0.0003/sec of output |
+| Music | `elevenlabs/elevenlabs/music-generation` | ElevenLabs Music API via RunComfy, $0.0083/sec of output |
 
-`runcomfy_music.estimate_cost()` applies these published rates automatically for these two exact
-model_ids; any other model_id returns `0.0` like the image/video gateway tools.
+The two music model_ids are documented in detail (full input schema, prompting guidance, example
+calls) in `.agents/skills/runcomfy-music/SKILL.md`. `runcomfy_music.estimate_cost()` applies their
+published rates automatically; any other model_id returns `0.0` like the image/video gateway tools
+(none of the image/video model_ids above have a hardcoded rate yet — only the two music ones do).
 
 #### Pricing
 

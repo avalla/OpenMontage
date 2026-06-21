@@ -69,8 +69,9 @@ class RunComfyVideo(BaseTool):
             "model_id": {
                 "type": "string",
                 "description": (
-                    "RunComfy model identifier. Find valid ids and their input schema "
-                    "at https://www.runcomfy.com/models"
+                    "RunComfy model identifier, e.g. 'google-deepmind/veo-3-1/image-to-video' "
+                    "or 'kling/kling-video-o3/4K/image-to-video'. Find valid ids and their "
+                    "input schema at https://www.runcomfy.com/models"
                 ),
             },
             "inputs": {
