@@ -6,6 +6,15 @@ __pycache__/
 dist/
 build/
 
+# Virtualenvs (should live outside the repo, but ignore if created here by mistake)
+.venv/
+venv/
+pyvenv.cfg
+/bin/
+/lib/
+/lib64
+/COPYING
+
 # Test/IDE
 .pytest_cache/
 .mypy_cache/
