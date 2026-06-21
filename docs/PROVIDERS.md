@@ -20,9 +20,10 @@ Everything you need to know about every provider in OpenMontage — setup instru
 | 8 | **$12/month** | Runway | Gen-4 video — highest quality AI video |
 | 9 | **pay-as-you-go** | HeyGen | Avatar videos, multi-model video gateway |
 | 10 | **pay-as-you-go** | Suno | Full song generation with vocals and lyrics |
-| 11 | **$0 + GPU** | Local video gen | WAN 2.1, Hunyuan, CogVideo, LTX — free, offline |
+| 11 | **$0 + NVIDIA GPU** | Local video gen | WAN 2.1, Hunyuan, CogVideo, LTX — free, offline (CUDA only, not Mac) |
 | 12 | **$0 + GPU** | Local Diffusion | Stable Diffusion images — free, offline |
-| 13 | **varies by model** | RunComfy | Any ComfyUI-hosted model by `model_id` (FLUX, Kling, LTX, and community models) through one CLI |
+| 13 | **varies by model** | RunComfy | Any ComfyUI-hosted model by `model_id` (FLUX, Kling, LTX, and community models) through one CLI — cloud, pay-per-run, despite the name |
+| 14 | **$0 + GPU** | ComfyUI Local | Your own ComfyUI server + workflow — free, offline, works on Apple Silicon Macs |
 
 ### Environment Variable Summary
 
@@ -53,8 +54,9 @@ RUNWAY_API_KEY=              # Runway Gen-4 video (direct)
 SUNO_API_KEY=                # Suno music generation
 
 # LOCAL (no keys needed — just GPU + install)
-VIDEO_GEN_LOCAL_ENABLED=     # Set to "true" for local video gen
+VIDEO_GEN_LOCAL_ENABLED=     # Set to "true" for local video gen (CUDA/NVIDIA only, not Mac)
 VIDEO_GEN_LOCAL_MODEL=       # wan2.1-1.3b, wan2.1-14b, hunyuan-1.5, ltx2-local, cogvideo-5b
+COMFYUI_API_URL=             # Optional — local ComfyUI server (Apple Silicon-friendly). Defaults to http://127.0.0.1:8188
 ```
 
 ---
@@ -711,6 +713,70 @@ VIDEO_GEN_LOCAL_MODEL=cogvideo-2b      # 6GB+ VRAM (lightest)
 
 **All local models support:** Image-to-video, text-to-video, offline generation, seeded reproducibility.
 
+**Apple Silicon / Mac note:** `wan_video`, `hunyuan_video`, `cogvideo_video`, and `ltx_video_local`
+load their diffusers pipeline with a hardcoded `.to("cuda")` — they require an NVIDIA GPU and will
+not run on a Mac (Apple Silicon or Intel), regardless of RAM. For free/offline generation on a Mac,
+use `comfyui_local` below instead.
+
+---
+
+### ComfyUI Local — Bring Your Own Workflow (Apple Silicon-friendly, GPU Required)
+
+> **Free, fully offline generation via a ComfyUI server you run yourself.** Unlike RunComfy
+> (below), nothing here is a cloud API — this tool just talks HTTP to a ComfyUI instance on your
+> own machine. ComfyUI runs natively on Apple Silicon via Metal/MPS, so this is the practical path
+> to local video/image generation on a Mac, where `wan_video`/`hunyuan_video`/`cogvideo_video`/
+> `ltx_video_local` (CUDA-only, see above) don't work.
+
+**Tool:** `comfyui_local`
+**Runtime:** Local GPU (Metal/MPS on Mac, or CUDA on Linux/Windows — whatever ComfyUI itself supports)
+**Env var:** `COMFYUI_API_URL` (optional — defaults to `http://127.0.0.1:8188`)
+
+#### Setup
+
+```bash
+# 1. Install ComfyUI (one-time)
+git clone https://github.com/comfyanonymous/ComfyUI
+cd ComfyUI && pip install -r requirements.txt
+
+# 2. Install whatever custom nodes your workflow needs, e.g.:
+#    ComfyUI-AnimateDiff-Evolved, ComfyUI-VideoHelperSuite, LTX-Video nodes, Mochi nodes
+#    via ComfyUI Manager, or by cloning into ComfyUI/custom_nodes/.
+# Download the matching model checkpoints into ComfyUI/models/.
+
+# 3. Start the server (leave it running)
+python main.py        # serves the API at http://127.0.0.1:8188
+
+# 4. In ComfyUI's settings, enable "Dev mode options", then build your
+#    workflow in the UI and export it with "Save (API Format)" — that JSON
+#    is what comfyui_local submits.
+```
+
+If ComfyUI runs on a different machine than OpenMontage, set
+`COMFYUI_API_URL=http://<that-machine-ip>:8188` in `.env`.
+
+#### How the tool works
+
+`comfyui_local` is a thin pass-through, by design — it does not template or generate workflows
+for you (no orchestration/creative logic in Python, per project convention). Provide:
+
+- `workflow` (dict) or `workflow_path` (path to the exported API-format JSON), and
+- `overrides` (optional): dotted-path patches applied before submission, e.g.
+  `{"6.inputs.text": "a neon city at night", "3.inputs.seed": 42}` — node ids and field names are
+  specific to your workflow; open the exported JSON (or the ComfyUI UI) to find them.
+
+The tool POSTs to `/prompt`, polls `/history/{prompt_id}` until done, and downloads every
+image/gif/video output via `/view` into `output_dir`.
+
+#### Limitations
+
+- **Not zero-setup.** You need ComfyUI installed, running, with the specific custom nodes and
+  model checkpoints your workflow requires already in place — there's no model catalog or
+  templating here, unlike RunComfy's `model_id` gateway.
+- **No Layer-3 prompting skill yet** (`agent_skills` is empty) — prompting technique depends
+  entirely on whichever model your workflow uses; check that model's own documentation.
+- Cost is always `$0` (your own hardware/electricity); `estimate_cost()` returns `0.0`.
+
 ---
 
 ### Local Diffusion — Offline Image Generation (GPU Required)
@@ -791,7 +857,8 @@ These tools require only FFmpeg or Python packages — no GPU, no API key.
 | **HeyGen** | `HEYGEN_API_KEY` | `heygen_video` | Pay-as-you-go |
 | **Suno** | `SUNO_API_KEY` | `suno_music` | Pay-as-you-go |
 | **RunComfy** | `RUNCOMFY_TOKEN` | `runcomfy_image`, `runcomfy_video`, `runcomfy_music` | Pay-as-you-go (per model) |
-| **Local GPU** | `VIDEO_GEN_LOCAL_ENABLED` | `wan_video`, `hunyuan_video`, `cogvideo_video`, `ltx_video_local` | Free (GPU required) |
+| **Local GPU** | `VIDEO_GEN_LOCAL_ENABLED` | `wan_video`, `hunyuan_video`, `cogvideo_video`, `ltx_video_local` | Free (NVIDIA GPU required, not Mac) |
+| **ComfyUI Local** | `COMFYUI_API_URL` (optional) | `comfyui_local` | Free (GPU required; Apple Silicon-friendly) |
 | **Local Diffusion** | — (install only) | `local_diffusion` | Free (GPU required) |
 | **Modal** | `MODAL_LTX2_ENDPOINT_URL` | `ltx_video_modal` | Self-hosted cloud |
 
@@ -804,7 +871,7 @@ How many providers cover each capability:
 | Capability | Cloud Providers | Local Providers | Free Options |
 |-----------|----------------|-----------------|--------------|
 | **Image Generation** | FLUX, Grok, Google Imagen, DALL-E 3, Recraft, RunComfy (any model_id) | Local Diffusion | Pexels, Pixabay (stock) |
-| **Video Generation** | Grok, Kling, Runway, Veo, Higgsfield, MiniMax, HeyGen, RunComfy (any model_id) | WAN, Hunyuan, CogVideo, LTX | Pexels, Pixabay (stock) |
+| **Video Generation** | Grok, Kling, Runway, Veo, Higgsfield, MiniMax, HeyGen, RunComfy (any model_id) | WAN, Hunyuan, CogVideo, LTX (CUDA only), ComfyUI Local (Apple Silicon-friendly) | Pexels, Pixabay (stock) |
 | **Text-to-Speech** | ElevenLabs, Google TTS, OpenAI | Piper | Piper, Google free tier, ElevenLabs free tier |
 | **Music Generation** | ElevenLabs, Suno, RunComfy (ACE-Step 1.5, ElevenLabs Music) | — | ElevenLabs free tier |
 | **Post-Production** | — | FFmpeg (compose, stitch, trim, mix, enhance, grade) | All free |
@@ -826,7 +893,10 @@ A: Yes. The agent generates still images (via any image provider — even free s
 A: fal.ai (`FAL_KEY`) is one pay-as-you-go option with broad single-key coverage. It unlocks FLUX images plus multiple video providers. No subscription — pay only for what you generate.
 
 **Q: I have a GPU. What can I run locally for free?**
-A: Set `VIDEO_GEN_LOCAL_ENABLED=true` and install `diffusers`. You get WAN 2.1, Hunyuan, CogVideo, and LTX video generation plus Stable Diffusion image generation — all free, all offline.
+A: On an NVIDIA/CUDA machine: set `VIDEO_GEN_LOCAL_ENABLED=true` and install `diffusers`. You get WAN 2.1, Hunyuan, CogVideo, and LTX video generation plus Stable Diffusion image generation — all free, all offline.
+
+**Q: I'm on a Mac (Apple Silicon). Can I generate video locally for free?**
+A: Not via `VIDEO_GEN_LOCAL_ENABLED` — those four tools hardcode `.to("cuda")` and don't run on Mac. Instead, install [ComfyUI](https://github.com/comfyanonymous/ComfyUI) yourself (it runs natively on Metal/MPS) and use the `comfyui_local` tool, which talks to your already-running ComfyUI server over HTTP. You'll need to build/export a workflow and install whatever custom nodes + model checkpoints it needs — see the "ComfyUI Local" section above. Don't confuse this with **RunComfy** (`runcomfy_video`), which despite the similar name is a paid cloud gateway, not local.
 
 **Q: Which TTS provider should I use?**
 A: For quality → ElevenLabs. For localization (50+ languages) → Google TTS. For budget → Google free tier (1M chars/month). For offline → Piper.
