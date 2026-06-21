@@ -22,6 +22,7 @@ Everything you need to know about every provider in OpenMontage — setup instru
 | 10 | **pay-as-you-go** | Suno | Full song generation with vocals and lyrics |
 | 11 | **$0 + GPU** | Local video gen | WAN 2.1, Hunyuan, CogVideo, LTX — free, offline |
 | 12 | **$0 + GPU** | Local Diffusion | Stable Diffusion images — free, offline |
+| 13 | **varies by model** | RunComfy | Any ComfyUI-hosted model by `model_id` (FLUX, Kling, LTX, and community models) through one CLI |
 
 ### Environment Variable Summary
 
@@ -44,6 +45,7 @@ DOUBAO_SPEECH_VOICE_TYPE=    # Default Doubao speaker/voice type
 
 # MULTI-MODEL GATEWAY (one key, 6+ tools)
 FAL_KEY=                     # FLUX, Recraft, Kling, Veo, MiniMax video
+RUNCOMFY_TOKEN=               # Any ComfyUI-hosted model by model_id, via the runcomfy CLI (no deployment needed)
 
 # VIDEO
 HEYGEN_API_KEY=              # HeyGen avatar video gateway
@@ -384,6 +386,38 @@ Google TTS offers 700+ voices across 50+ languages. Voice names follow the patte
 | Sora 2 | ~$0.50 |
 
 **Free tier:** Limited credits on signup. No monthly renewal on free plan.
+
+---
+
+### RunComfy — ComfyUI Model Gateway
+
+> **Run any ComfyUI-hosted model by `model_id`, no workflow deployment needed.** RunComfy's Model API exposes thousands of community and official ComfyUI-backed models (FLUX, Kling, LTX, AnimateDiff, and more) behind a single CLI. Best when you want a specific community model that no other provider offers, or want to try a model before committing to a dedicated integration.
+
+**Tools unlocked:** `runcomfy_image`, `runcomfy_video`
+**Env var:** `RUNCOMFY_TOKEN`
+**Also requires:** Node.js >= 18 (the CLI runs via `npx -y @runcomfy/cli`, or install `@runcomfy/cli` globally)
+
+#### Setup
+
+1. Go to [runcomfy.com](https://www.runcomfy.com) and create an account
+2. Get a token from your [profile page](https://www.runcomfy.com/profile) (click your avatar → API tokens)
+3. Add to `.env`: `RUNCOMFY_TOKEN=your-token-here`
+   - Alternatively, skip the env var and run `npx -y @runcomfy/cli login` once locally — the CLI stores the token at `~/.config/runcomfy/token.json`
+4. Browse [runcomfy.com/models](https://www.runcomfy.com/models) to find a `model_id` and its required input fields — every model has its own schema
+
+#### How It Differs From Other Providers
+
+Other providers in this guide (FLUX, Kling, etc.) are single fixed models behind a dedicated tool with a typed `input_schema`. RunComfy is a **gateway** — `runcomfy_image`/`runcomfy_video` take a `model_id` plus a free-form `inputs` object matching *that model's* schema, which you must look up per model. There's no single typed schema because the underlying model changes per call.
+
+Because the underlying model varies, the right Layer-3 prompting skill also varies. Both tools expose `required_agent_skills(model_id)` — call it before building `inputs` to know which prompting guide applies (e.g. a `model_id` containing `"flux"` maps to the existing `flux-best-practices` / `bfl-api` skills). An empty result means no matching skill exists yet for that model family; check the model's own page on runcomfy.com/models regardless.
+
+#### Pricing
+
+Not published in OpenMontage's provider data — RunComfy bills per model/run via your account balance. Check current rates on the model's page before running at scale; `estimate_cost` returns `0.0` for these tools because no fixed rate exists.
+
+#### Free tier
+
+None published. Pay-as-you-go per RunComfy account.
 
 ---
 
@@ -731,6 +765,7 @@ These tools require only FFmpeg or Python packages — no GPU, no API key.
 | **Higgsfield** | `HIGGSFIELD_API_KEY` + `HIGGSFIELD_API_SECRET` | `higgsfield_video` | Subscription ($15-84/mo) |
 | **HeyGen** | `HEYGEN_API_KEY` | `heygen_video` | Pay-as-you-go |
 | **Suno** | `SUNO_API_KEY` | `suno_music` | Pay-as-you-go |
+| **RunComfy** | `RUNCOMFY_TOKEN` | `runcomfy_image`, `runcomfy_video` | Pay-as-you-go (per model) |
 | **Local GPU** | `VIDEO_GEN_LOCAL_ENABLED` | `wan_video`, `hunyuan_video`, `cogvideo_video`, `ltx_video_local` | Free (GPU required) |
 | **Local Diffusion** | — (install only) | `local_diffusion` | Free (GPU required) |
 | **Modal** | `MODAL_LTX2_ENDPOINT_URL` | `ltx_video_modal` | Self-hosted cloud |
@@ -743,8 +778,8 @@ How many providers cover each capability:
 
 | Capability | Cloud Providers | Local Providers | Free Options |
 |-----------|----------------|-----------------|--------------|
-| **Image Generation** | FLUX, Grok, Google Imagen, DALL-E 3, Recraft | Local Diffusion | Pexels, Pixabay (stock) |
-| **Video Generation** | Grok, Kling, Runway, Veo, Higgsfield, MiniMax, HeyGen | WAN, Hunyuan, CogVideo, LTX | Pexels, Pixabay (stock) |
+| **Image Generation** | FLUX, Grok, Google Imagen, DALL-E 3, Recraft, RunComfy (any model_id) | Local Diffusion | Pexels, Pixabay (stock) |
+| **Video Generation** | Grok, Kling, Runway, Veo, Higgsfield, MiniMax, HeyGen, RunComfy (any model_id) | WAN, Hunyuan, CogVideo, LTX | Pexels, Pixabay (stock) |
 | **Text-to-Speech** | ElevenLabs, Google TTS, OpenAI | Piper | Piper, Google free tier, ElevenLabs free tier |
 | **Music Generation** | ElevenLabs, Suno | — | ElevenLabs free tier |
 | **Post-Production** | — | FFmpeg (compose, stitch, trim, mix, enhance, grade) | All free |
