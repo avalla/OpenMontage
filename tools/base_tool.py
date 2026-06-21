@@ -37,13 +37,15 @@ def _load_dotenv() -> None:
                 continue
             key, _, value = line.partition("=")
             key = key.strip()
+            # Strip inline comments on the raw (unstripped) value: a '#' that
+            # is the first character or preceded by whitespace starts a
+            # comment. Must run before .strip() — once leading whitespace is
+            # gone, "KEY=   # comment" looks like a value starting with '#'
+            # instead of an empty value with a trailing comment.
+            hash_idx = value.find("#")
+            if hash_idx != -1 and (hash_idx == 0 or value[hash_idx - 1].isspace()):
+                value = value[:hash_idx]
             value = value.strip().strip("'\"")
-            # Strip inline comments: VAR=value  # comment
-            # But only if the # is preceded by whitespace (avoid stripping from values like colors)
-            if "  #" in value:
-                value = value[:value.index("  #")].rstrip()
-            elif "\t#" in value:
-                value = value[:value.index("\t#")].rstrip()
             if key and key not in os.environ:
                 os.environ[key] = value
 

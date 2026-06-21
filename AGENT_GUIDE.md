@@ -642,7 +642,7 @@ The `.agents/skills/` directory is large. When you're not coming in through a to
 | **Character animation** | `character-rigging`, `svg-character-animation`, `pose-library-design`, `canvas-procedural-animation`, `character-animation-qa` |
 | **Image generation** | `bfl-api`, `flux-best-practices` |
 | **Video generation** | `seedance-2-0` (preferred premium default — cinematic, trailer, multi-shot, synced audio, lip-sync), `ai-video-gen`, `ltx2` |
-| **Audio** | `elevenlabs`, `music`, `sound-effects`, `acestep`, `text-to-speech`, `setup-api-key` |
+| **Audio** | `elevenlabs`, `music`, `sound-effects`, `acestep`, `runcomfy-music` (ACE-Step/ElevenLabs Music via RunComfy), `text-to-speech`, `setup-api-key` |
 | **Avatar / lip-sync** | `avatar-video`, `heygen`, `create-video`, `faceswap`, `video-translate`, `speech-to-text`, `agents` |
 | **Capture** | `playwright-recording` (browser flows), `ffmpeg` (post) |
 | **Visualization** | `beautiful-mermaid`, `d3-viz`, `manim-composer`, `manimce-best-practices`, `manimgl-best-practices` |

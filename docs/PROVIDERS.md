@@ -393,7 +393,7 @@ Google TTS offers 700+ voices across 50+ languages. Voice names follow the patte
 
 > **Run any ComfyUI-hosted model by `model_id`, no workflow deployment needed.** RunComfy's Model API exposes thousands of community and official ComfyUI-backed models (FLUX, Kling, LTX, AnimateDiff, and more) behind a single CLI. Best when you want a specific community model that no other provider offers, or want to try a model before committing to a dedicated integration.
 
-**Tools unlocked:** `runcomfy_image`, `runcomfy_video`
+**Tools unlocked:** `runcomfy_image`, `runcomfy_video`, `runcomfy_music`
 **Env var:** `RUNCOMFY_TOKEN`
 **Also requires:** Node.js >= 18 (the CLI runs via `npx -y @runcomfy/cli`, or install `@runcomfy/cli` globally)
 
@@ -407,13 +407,23 @@ Google TTS offers 700+ voices across 50+ languages. Voice names follow the patte
 
 #### How It Differs From Other Providers
 
-Other providers in this guide (FLUX, Kling, etc.) are single fixed models behind a dedicated tool with a typed `input_schema`. RunComfy is a **gateway** — `runcomfy_image`/`runcomfy_video` take a `model_id` plus a free-form `inputs` object matching *that model's* schema, which you must look up per model. There's no single typed schema because the underlying model changes per call.
+Other providers in this guide (FLUX, Kling, etc.) are single fixed models behind a dedicated tool with a typed `input_schema`. RunComfy is a **gateway** — `runcomfy_image`/`runcomfy_video`/`runcomfy_music` take a `model_id` plus a free-form `inputs` object matching *that model's* schema, which you must look up per model. There's no single typed schema because the underlying model changes per call.
 
-Because the underlying model varies, the right Layer-3 prompting skill also varies. Both tools expose `required_agent_skills(model_id)` — call it before building `inputs` to know which prompting guide applies (e.g. a `model_id` containing `"flux"` maps to the existing `flux-best-practices` / `bfl-api` skills). An empty result means no matching skill exists yet for that model family; check the model's own page on runcomfy.com/models regardless.
+Because the underlying model varies, the right Layer-3 prompting skill also varies. All three tools expose `required_agent_skills(model_id)` — call it before building `inputs` to know which prompting guide applies (e.g. a `model_id` containing `"flux"` maps to the existing `flux-best-practices` / `bfl-api` skills; `"ace-step"` maps to `runcomfy-music` + `acestep`; `"music-generation"` maps to `runcomfy-music` + `music`). An empty result means no matching skill exists yet for that model family; check the model's own page on runcomfy.com/models regardless.
+
+#### Music model_ids
+
+Two RunComfy-hosted music models are documented in `.agents/skills/runcomfy-music/SKILL.md`:
+
+- `acestep-ai/ace-step-1.5/text-to-audio` — open-source ACE-Step 1.5, $0.0003/sec of output
+- `elevenlabs/elevenlabs/music-generation` — ElevenLabs Music API via RunComfy, $0.0083/sec of output
+
+`runcomfy_music.estimate_cost()` applies these published rates automatically for these two exact
+model_ids; any other model_id returns `0.0` like the image/video gateway tools.
 
 #### Pricing
 
-Not published in OpenMontage's provider data — RunComfy bills per model/run via your account balance. Check current rates on the model's page before running at scale; `estimate_cost` returns `0.0` for these tools because no fixed rate exists.
+Not published in OpenMontage's provider data for most models — RunComfy bills per model/run via your account balance. Check current rates on the model's page before running at scale; `estimate_cost` returns `0.0` for unrecognized model_ids because no fixed rate exists (see the music model_ids above for the two exceptions where a rate is hardcoded).
 
 #### Free tier
 
@@ -765,7 +775,7 @@ These tools require only FFmpeg or Python packages — no GPU, no API key.
 | **Higgsfield** | `HIGGSFIELD_API_KEY` + `HIGGSFIELD_API_SECRET` | `higgsfield_video` | Subscription ($15-84/mo) |
 | **HeyGen** | `HEYGEN_API_KEY` | `heygen_video` | Pay-as-you-go |
 | **Suno** | `SUNO_API_KEY` | `suno_music` | Pay-as-you-go |
-| **RunComfy** | `RUNCOMFY_TOKEN` | `runcomfy_image`, `runcomfy_video` | Pay-as-you-go (per model) |
+| **RunComfy** | `RUNCOMFY_TOKEN` | `runcomfy_image`, `runcomfy_video`, `runcomfy_music` | Pay-as-you-go (per model) |
 | **Local GPU** | `VIDEO_GEN_LOCAL_ENABLED` | `wan_video`, `hunyuan_video`, `cogvideo_video`, `ltx_video_local` | Free (GPU required) |
 | **Local Diffusion** | — (install only) | `local_diffusion` | Free (GPU required) |
 | **Modal** | `MODAL_LTX2_ENDPOINT_URL` | `ltx_video_modal` | Self-hosted cloud |
@@ -781,7 +791,7 @@ How many providers cover each capability:
 | **Image Generation** | FLUX, Grok, Google Imagen, DALL-E 3, Recraft, RunComfy (any model_id) | Local Diffusion | Pexels, Pixabay (stock) |
 | **Video Generation** | Grok, Kling, Runway, Veo, Higgsfield, MiniMax, HeyGen, RunComfy (any model_id) | WAN, Hunyuan, CogVideo, LTX | Pexels, Pixabay (stock) |
 | **Text-to-Speech** | ElevenLabs, Google TTS, OpenAI | Piper | Piper, Google free tier, ElevenLabs free tier |
-| **Music Generation** | ElevenLabs, Suno | — | ElevenLabs free tier |
+| **Music Generation** | ElevenLabs, Suno, RunComfy (ACE-Step 1.5, ElevenLabs Music) | — | ElevenLabs free tier |
 | **Post-Production** | — | FFmpeg (compose, stitch, trim, mix, enhance, grade) | All free |
 | **Analysis** | — | WhisperX, Scene Detect, Frame Sampler, CLIP/BLIP-2 | All free |
 | **Enhancement** | — | Upscale, BG Remove, Face Enhance, Face Restore | All free |

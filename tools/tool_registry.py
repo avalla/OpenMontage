@@ -98,6 +98,9 @@ class ToolRegistry:
                     continue
                 key, _, value = line.partition("=")
                 key = key.strip()
+                hash_idx = value.find("#")
+                if hash_idx != -1 and (hash_idx == 0 or value[hash_idx - 1].isspace()):
+                    value = value[:hash_idx]
                 value = value.strip().strip("'\"")
                 if key and key not in os.environ:
                     os.environ[key] = value

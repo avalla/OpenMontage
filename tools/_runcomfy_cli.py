@@ -37,6 +37,8 @@ MODEL_FAMILY_SKILLS: dict[str, list[str]] = {
     "runway": ["ai-video-gen"],
     "wav2lip": ["faceswap"],
     "sadtalker": ["avatar-video"],
+    "ace-step": ["runcomfy-music", "acestep"],
+    "music-generation": ["runcomfy-music", "music"],
 }
 
 
