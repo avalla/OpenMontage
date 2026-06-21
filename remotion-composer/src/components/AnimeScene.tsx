@@ -21,8 +21,20 @@ function resolveAsset(src: string): string {
   ) {
     return src;
   }
-  const clean = src.replace(/^file:\/\/\/?/, "");
-  return staticFile(clean);
+  // Already a file:// URI (absolute path) — pass through unchanged. Do NOT
+  // strip and reconstruct: stripping "file://" plus the leading "/" of the
+  // path (regex artifact) drops the path's own leading slash, turning
+  // "file:///home/x" into "home/x" and silently routing it through
+  // staticFile() (404, since it's not under public/) instead of loading it.
+  if (src.startsWith("file://")) {
+    return src;
+  }
+  // Absolute paths (Unix: /foo, Windows: C:\foo or C:/foo) — convert to file:// URI.
+  // staticFile() only accepts relative paths within public/, so absolute paths must bypass it.
+  if (src.startsWith("/") || /^[A-Za-z]:[\\/]/.test(src)) {
+    return `file:///${src.replace(/\\/g, "/")}`;
+  }
+  return staticFile(src);
 }
 
 // ---------------------------------------------------------------------------

@@ -1306,15 +1306,55 @@ class VideoCompose(BaseTool):
         # Deep-copy props so we don't mutate the original
         props = json.loads(json.dumps(composition_data))
 
-        # Convert absolute file paths to file:// URIs for Remotion's
-        # Img and OffthreadVideo components
+        # remotion-composer lives at project root
+        composer_dir = Path(__file__).resolve().parent.parent.parent / "remotion-composer"
+        if not composer_dir.exists():
+            return ToolResult(
+                success=False,
+                error=f"Remotion composer project not found at {composer_dir}",
+            )
+
+        # Local absolute file paths (anything outside remotion-composer/public/)
+        # can't be loaded directly by Remotion's renderer: headless Chrome's
+        # Image/fetch loader rejects file:// URIs (net::ERR_UNKNOWN_URL_SCHEME)
+        # even with --disable-web-security, and staticFile() only resolves
+        # paths that already live under public/. So for any local existing
+        # file referenced from project/asset directories, copy it into a
+        # scratch folder under public/ and rewrite the prop to the resulting
+        # public-relative path. http(s)/data URIs pass through untouched.
+        render_assets_dir = composer_dir / "public" / "_render_assets"
+        render_assets_dir.mkdir(parents=True, exist_ok=True)
+        copied_assets: list[Path] = []
+
+        def _localize(path_str: str) -> str:
+            if not path_str or path_str.startswith(("http://", "https://", "data:")):
+                return path_str
+            local = path_str[len("file://"):] if path_str.startswith("file://") else path_str
+            resolved = Path(local).resolve()
+            if not resolved.exists():
+                return path_str
+            dest = render_assets_dir / resolved.name
+            if dest.resolve() != resolved:
+                shutil.copy2(resolved, dest)
+                copied_assets.append(dest)
+            return f"_render_assets/{dest.name}"
+
         for cut in props.get("cuts", []):
-            source = cut.get("source", "")
-            if source and not source.startswith(("http://", "https://", "file://")):
-                resolved = Path(source).resolve()
-                if resolved.exists():
-                    posix = resolved.as_posix()
-                    cut["source"] = f"file:///{posix}" if not posix.startswith("/") else f"file://{posix}"
+            if cut.get("source"):
+                cut["source"] = _localize(cut["source"])
+            # anime_scene reads cut.images[], not cut.source — rewrite those too.
+            if cut.get("images"):
+                cut["images"] = [_localize(img) for img in cut["images"]]
+            if cut.get("backgroundImage"):
+                cut["backgroundImage"] = _localize(cut["backgroundImage"])
+            if cut.get("backgroundVideo"):
+                cut["backgroundVideo"] = _localize(cut["backgroundVideo"])
+
+        audio_cfg = props.get("audio") or {}
+        for layer_name in ("music", "narration"):
+            layer = audio_cfg.get(layer_name)
+            if layer and layer.get("src"):
+                layer["src"] = _localize(layer["src"])
 
         # Build a custom themeConfig from the playbook's actual colors.
         # This ensures every video gets a unique visual identity derived
@@ -1333,14 +1373,6 @@ class VideoCompose(BaseTool):
         props_path = output_path.parent / ".remotion_props.json"
         with open(props_path, "w", encoding="utf-8") as f:
             json.dump(props, f)
-
-        # remotion-composer lives at project root
-        composer_dir = Path(__file__).resolve().parent.parent.parent / "remotion-composer"
-        if not composer_dir.exists():
-            return ToolResult(
-                success=False,
-                error=f"Remotion composer project not found at {composer_dir}",
-            )
 
         # Route to the correct Remotion composition based on renderer_family.
         # This prevents all pipelines from collapsing into the Explainer visual grammar.
@@ -1376,6 +1408,8 @@ class VideoCompose(BaseTool):
         finally:
             if props_path.exists():
                 props_path.unlink()
+            for asset in copied_assets:
+                asset.unlink(missing_ok=True)
 
         if not output_path.exists():
             return ToolResult(
