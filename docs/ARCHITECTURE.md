@@ -152,17 +152,17 @@ Selectors route based on: user preference when explicitly set, then scored ranki
 
 **Analysis (4):** transcriber (WhisperX), scene_detect, frame_sampler, video_understand (CLIP/BLIP-2)
 
-**Audio (8):** elevenlabs_tts, google_tts, openai_tts, piper_tts, tts_selector, music_gen, audio_mixer, audio_enhance
+**Audio (9):** elevenlabs_tts, google_tts, openai_tts, piper_tts, tts_selector, music_gen, runcomfy_music, audio_mixer, audio_enhance
 
 **Avatar (2):** talking_head (SadTalker/MuseTalk), lip_sync (Wav2Lip)
 
 **Enhancement (5):** upscale (Real-ESRGAN), bg_remove (rembg/U2Net), face_enhance, face_restore (CodeFormer/GFPGAN), color_grade (FFmpeg LUTs)
 
-**Graphics (13):** flux_image, grok_image, google_imagen, openai_image, recraft_image, local_diffusion, pexels_image, pixabay_image, image_selector, code_snippet, diagram_gen, math_animate (ManimCE), image_gen (deprecated)
+**Graphics (14):** flux_image, grok_image, google_imagen, openai_image, recraft_image, runcomfy_image, local_diffusion, pexels_image, pixabay_image, image_selector, code_snippet, diagram_gen, math_animate (ManimCE), image_gen (deprecated)
 
 **Subtitle (1):** subtitle_gen
 
-**Video (19):** grok_video, heygen_video, higgsfield_video, veo_video, kling_video, runway_video, minimax_video, wan_video, hunyuan_video, cogvideo_video, ltx_video_local, ltx_video_modal, comfyui_local, pexels_video, pixabay_video, video_selector, video_compose (FFmpeg), video_stitch, video_trimmer
+**Video (20):** grok_video, heygen_video, higgsfield_video, veo_video, kling_video, runway_video, minimax_video, wan_video, hunyuan_video, cogvideo_video, ltx_video_local, ltx_video_modal, comfyui_local, runcomfy_video, pexels_video, pixabay_video, video_selector, video_compose (FFmpeg), video_stitch, video_trimmer
 
 ---
 
@@ -393,6 +393,7 @@ All config is validated via Pydantic models in `lib/config_model.py`.
 | `RUNWAY_API_KEY` | runway_video | Runway Gen-3/Gen-4 direct |
 | `HIGGSFIELD_API_KEY` + `HIGGSFIELD_API_SECRET` | higgsfield_video | Higgsfield multi-model video |
 | `MODAL_LTX2_ENDPOINT_URL` | ltx_video_modal | Self-hosted LTX-2 |
+| `RUNCOMFY_TOKEN` | runcomfy_image, runcomfy_video, runcomfy_music | RunComfy Model API gateway — cloud, any ComfyUI-hosted model by `model_id` |
 | `VIDEO_GEN_LOCAL_ENABLED` | local video tools | Enable local GPU generation (CUDA only, not Mac) |
 | `VIDEO_GEN_LOCAL_MODEL` | wan, hunyuan, ltx, cogvideo | Select local model |
 | `COMFYUI_API_URL` (optional) | comfyui_local | Local ComfyUI server URL (Apple Silicon-friendly); defaults to `http://127.0.0.1:8188` |
