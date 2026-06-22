@@ -401,23 +401,40 @@ All config is validated via Pydantic models in `lib/config_model.py`.
 
 ### Environment Variables (.env)
 
+> Cross-checked against `grep -rohE 'os\.environ\.get\("[A-Z_]+"' tools/` — see `docs/PROVIDERS.md`
+> for the exhaustive provider-by-provider setup guide; this table is the quick-reference subset.
+
 | Variable | Used By | Purpose |
 |----------|---------|---------|
 | `ELEVENLABS_API_KEY` | elevenlabs_tts, music_gen | TTS, music, sound effects |
 | `OPENAI_API_KEY` | openai_tts, openai_image | TTS fallback, DALL-E 3 |
 | `XAI_API_KEY` | grok_image, grok_video | Grok image editing/generation, Grok video generation |
-| `FAL_KEY` | flux_image, kling_video, veo_video, minimax_video, recraft_image | fal.ai hosted models (FLUX, Veo, Kling, MiniMax, Recraft) |
+| `FAL_KEY` (or `FAL_AI_API_KEY`) | flux_image, kling_video, veo_video, minimax_video, recraft_image, seedance_video, image_gen | fal.ai hosted models (FLUX, Veo, Kling, MiniMax, Recraft, Seedance) |
 | `HEYGEN_API_KEY` | heygen_video | Multi-provider video generation |
-| `PEXELS_API_KEY` | pexels_image, pexels_video | Stock media |
-| `PIXABAY_API_KEY` | pixabay_image, pixabay_video | Stock media |
-| `GOOGLE_API_KEY` | google_imagen, google_tts | Google Imagen images, Google Cloud TTS |
-| `RUNWAY_API_KEY` | runway_video | Runway Gen-3/Gen-4 direct |
-| `HIGGSFIELD_API_KEY` + `HIGGSFIELD_API_SECRET` | higgsfield_video | Higgsfield multi-model video |
+| `PEXELS_API_KEY` | pexels_image, pexels_video, corpus_builder | Stock media |
+| `PIXABAY_API_KEY` | pixabay_image, pixabay_video, pixabay_music, corpus_builder | Stock media (image/video/music) |
+| `UNSPLASH_ACCESS_KEY` | corpus_builder | Stock images (no API key needed for archive.org/NASA/Wikimedia sources) |
+| `COVERR_API_KEY` | corpus_builder | Coverr stock video source |
+| `NARA_API_KEY` | corpus_builder | NARA (US National Archives) stock source |
+| `VIDEVO_API_KEY` | corpus_builder | Videvo stock video source |
+| `FREESOUND_API_KEY` | freesound_music | Freesound sound/music search |
+| `GOOGLE_API_KEY` (or `GEMINI_API_KEY`) | google_imagen, google_tts | Google Imagen images, Google Cloud TTS |
+| `GOOGLE_APPLICATION_CREDENTIALS` | google_tts | Alternative service-account auth path for Google TTS |
+| `DOUBAO_SPEECH_API_KEY` | doubao_tts | Volcengine Doubao Speech TTS |
+| `DOUBAO_SPEECH_VOICE_TYPE` (optional) | doubao_tts | Default Doubao speaker voice |
+| `RUNWAY_API_KEY` / `RUNWAYML_API_SECRET` | runway_video | Runway Gen-3/Gen-4 direct |
+| `HIGGSFIELD_API_KEY` + `HIGGSFIELD_API_SECRET` (or combined `HIGGSFIELD_KEY`) | higgsfield_video | Higgsfield multi-model video |
+| `SUNO_API_KEY` | suno_music | Suno full song generation |
+| `REPLICATE_API_TOKEN` | seedance_replicate | Seedance via Replicate (alternative to the fal.ai route) |
 | `MODAL_LTX2_ENDPOINT_URL` | ltx_video_modal | Self-hosted LTX-2 |
 | `RUNCOMFY_TOKEN` | runcomfy_image, runcomfy_video, runcomfy_music | RunComfy Model API gateway — cloud, any ComfyUI-hosted model by `model_id` |
-| `VIDEO_GEN_LOCAL_ENABLED` | local video tools | Enable local GPU generation (CUDA only, not Mac) |
-| `VIDEO_GEN_LOCAL_MODEL` | wan, hunyuan, ltx, cogvideo | Select local model |
+| `VIDEO_GEN_LOCAL_ENABLED` | wan_video, hunyuan_video, cogvideo_video, ltx_video_local | Enable local GPU generation (CUDA only, not Mac) |
+| `VIDEO_GEN_LOCAL_MODEL` | wan_video, hunyuan_video, cogvideo_video, ltx_video_local | Select local model |
 | `COMFYUI_API_URL` (optional) | comfyui_local | Local ComfyUI server URL (Apple Silicon-friendly); defaults to `http://127.0.0.1:8188` |
+| `SADTALKER_PATH` | talking_head | Local SadTalker checkout for avatar/lip-sync |
+| `WAV2LIP_PATH` | lip_sync | Local Wav2Lip checkout |
+| `HF_TOKEN` (optional) | transcriber | Hugging Face token for gated WhisperX model downloads |
+| `OPENMONTAGE_CACHE_DIR` / `OPENMONTAGE_CACHE_MAX_GB` (optional) | clip_cache | Override the stock-clip cache location/size cap |
 
 ---
 
