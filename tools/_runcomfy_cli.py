@@ -14,6 +14,7 @@ import json
 import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any, Optional
 
@@ -132,19 +133,29 @@ def run_model(
     out_dir.mkdir(parents=True, exist_ok=True)
     before = {p: p.stat().st_mtime for p in out_dir.glob("*") if p.is_file()}
 
+    env = dict(os.environ)
+    env["RUNCOMFY_TOKEN"] = token
+
+    # Write the payload to a temp file rather than passing it inline via
+    # --input: large payloads (e.g. base64-encoded reference images for
+    # image-to-video) blow past the OS arg-list limit (E2BIG) if passed
+    # directly on the command line.
+    with tempfile.NamedTemporaryFile(
+        "w", suffix=".json", prefix="runcomfy_input_", delete=False
+    ) as tmp:
+        json.dump(model_inputs, tmp)
+        input_file_path = tmp.name
+
     cmd = _base_command() + [
         "run",
         model_id,
-        "--input",
-        json.dumps(model_inputs),
+        "--input-file",
+        input_file_path,
         "--output-dir",
         str(out_dir),
         "--output",
         "json",
     ]
-
-    env = dict(os.environ)
-    env["RUNCOMFY_TOKEN"] = token
 
     try:
         proc = subprocess.run(
@@ -160,6 +171,11 @@ def run_model(
             f"runcomfy CLI timed out after {timeout_seconds}s running model {model_id!r}: "
             f"{(e.stderr or '')[-2000:]}"
         ) from e
+    finally:
+        try:
+            os.unlink(input_file_path)
+        except OSError:
+            pass
 
     if proc.returncode != 0:
         raise RunComfyCLIError(
