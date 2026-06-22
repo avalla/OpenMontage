@@ -181,7 +181,7 @@ RUNWAY_API_KEY=your-key        # Runway Gen-4 direct
 ```
 
 <details>
-<summary><strong>Have a GPU? Unlock free local video generation</strong></summary>
+<summary><strong>Have an NVIDIA GPU? Unlock free local video generation</strong></summary>
 
 ```bash
 make install-gpu
@@ -190,6 +190,22 @@ make install-gpu
 VIDEO_GEN_LOCAL_ENABLED=true
 VIDEO_GEN_LOCAL_MODEL=wan2.1-1.3b  # or wan2.1-14b, hunyuan-1.5, ltx2-local, cogvideo-5b
 ```
+
+CUDA only — these tools hardcode `.to("cuda")` and won't run on a Mac.
+
+</details>
+
+<details>
+<summary><strong>On a Mac (Apple Silicon)? Use ComfyUI locally instead</strong></summary>
+
+The four tools above need an NVIDIA GPU. For free, offline generation on a Mac, install
+[ComfyUI](https://github.com/comfyanonymous/ComfyUI) yourself (it runs natively on Metal/MPS) and
+use the `comfyui_local` tool, which just talks to your already-running ComfyUI server over HTTP —
+no GPU code runs in OpenMontage's own process. See "ComfyUI Local" in
+[`docs/PROVIDERS.md`](docs/PROVIDERS.md) for setup, workflow export, and limitations.
+
+Don't confuse this with `runcomfy_video`/`RUNCOMFY_TOKEN` above — despite the similar name, RunComfy
+is a paid cloud gateway, not local.
 
 </details>
 

@@ -162,7 +162,7 @@ Selectors route based on: user preference when explicitly set, then scored ranki
 
 **Subtitle (1):** subtitle_gen
 
-**Video (18):** grok_video, heygen_video, higgsfield_video, veo_video, kling_video, runway_video, minimax_video, wan_video, hunyuan_video, cogvideo_video, ltx_video_local, ltx_video_modal, pexels_video, pixabay_video, video_selector, video_compose (FFmpeg), video_stitch, video_trimmer
+**Video (19):** grok_video, heygen_video, higgsfield_video, veo_video, kling_video, runway_video, minimax_video, wan_video, hunyuan_video, cogvideo_video, ltx_video_local, ltx_video_modal, comfyui_local, pexels_video, pixabay_video, video_selector, video_compose (FFmpeg), video_stitch, video_trimmer
 
 ---
 
@@ -393,8 +393,9 @@ All config is validated via Pydantic models in `lib/config_model.py`.
 | `RUNWAY_API_KEY` | runway_video | Runway Gen-3/Gen-4 direct |
 | `HIGGSFIELD_API_KEY` + `HIGGSFIELD_API_SECRET` | higgsfield_video | Higgsfield multi-model video |
 | `MODAL_LTX2_ENDPOINT_URL` | ltx_video_modal | Self-hosted LTX-2 |
-| `VIDEO_GEN_LOCAL_ENABLED` | local video tools | Enable local GPU generation |
+| `VIDEO_GEN_LOCAL_ENABLED` | local video tools | Enable local GPU generation (CUDA only, not Mac) |
 | `VIDEO_GEN_LOCAL_MODEL` | wan, hunyuan, ltx, cogvideo | Select local model |
+| `COMFYUI_API_URL` (optional) | comfyui_local | Local ComfyUI server URL (Apple Silicon-friendly); defaults to `http://127.0.0.1:8188` |
 
 ---
 
