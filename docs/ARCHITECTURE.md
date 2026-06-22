@@ -150,19 +150,40 @@ Selectors route based on: user preference when explicitly set, then scored ranki
 
 ### Tool Inventory by Category
 
-**Analysis (4):** transcriber (WhisperX), scene_detect, frame_sampler, video_understand (CLIP/BLIP-2)
+> Generated against the live registry (`registry.capability_catalog()`) rather than hand-maintained
+> from memory — re-run that call after adding/removing tools to keep these counts honest.
 
-**Audio (9):** elevenlabs_tts, google_tts, openai_tts, piper_tts, tts_selector, music_gen, runcomfy_music, audio_mixer, audio_enhance
+**Analysis (11):** audio_energy, audio_probe, composition_validator, face_tracker, frame_sampler, scene_detect, transcriber (WhisperX), transcript_fetcher, video_analyzer, video_understand (CLIP/BLIP-2), visual_qa
+
+**Audio — TTS (6):** elevenlabs_tts, google_tts, openai_tts, doubao_tts, piper_tts, tts_selector
+
+**Audio — Music Generation (3):** music_gen, runcomfy_music, suno_music
+
+**Audio — Music Search (2):** freesound_music, pixabay_music
+
+**Audio — Processing (2):** audio_mixer, audio_enhance
 
 **Avatar (2):** talking_head (SadTalker/MuseTalk), lip_sync (Wav2Lip)
 
-**Enhancement (5):** upscale (Real-ESRGAN), bg_remove (rembg/U2Net), face_enhance, face_restore (CodeFormer/GFPGAN), color_grade (FFmpeg LUTs)
+**Character Animation (6):** character_spec_generator, svg_rig_builder, pose_library_builder, action_timeline_compiler, character_rig_renderer, character_animation_reviewer
 
-**Graphics (14):** flux_image, grok_image, google_imagen, openai_image, recraft_image, runcomfy_image, local_diffusion, pexels_image, pixabay_image, image_selector, code_snippet, diagram_gen, math_animate (ManimCE), image_gen (deprecated)
+**Clip Sourcing & Corpus (3):** direct_clip_search (acquisition), clip_search (retrieval), corpus_builder (corpus population)
 
-**Subtitle (1):** subtitle_gen
+**Enhancement (6):** upscale (Real-ESRGAN), bg_remove (rembg/U2Net), face_enhance, face_restore (CodeFormer/GFPGAN), eye_enhance, color_grade (FFmpeg LUTs)
 
-**Video (20):** grok_video, heygen_video, higgsfield_video, veo_video, kling_video, runway_video, minimax_video, wan_video, hunyuan_video, cogvideo_video, ltx_video_local, ltx_video_modal, comfyui_local, runcomfy_video, pexels_video, pixabay_video, video_selector, video_compose (FFmpeg), video_stitch, video_trimmer
+**Graphics — Image Generation (11):** flux_image, grok_image, google_imagen, openai_image, recraft_image, runcomfy_image, local_diffusion, pexels_image, pixabay_image, image_selector, image_gen (deprecated)
+
+**Graphics — Diagrams & Math (3):** code_snippet, diagram_gen, math_animate (ManimCE)
+
+**Screen Capture (3):** cap_recorder, screen_recorder, screen_capture_selector
+
+**Source Ingest (1):** video_downloader
+
+**Subtitle (2):** subtitle_gen, remotion_caption_burn
+
+**Video Generation (19):** grok_video, heygen_video, higgsfield_video, veo_video, kling_video, runway_video, minimax_video, seedance_video, seedance_replicate, wan_video, hunyuan_video, cogvideo_video, ltx_video_local, ltx_video_modal, comfyui_local, runcomfy_video, pexels_video, pixabay_video, video_selector
+
+**Video Post-Production (9):** video_compose (FFmpeg/Remotion/HyperFrames), hyperframes_compose, video_stitch, video_trimmer, auto_reframe, green_screen_composite, green_screen_processor, showcase_card, silence_cutter
 
 ---
 
