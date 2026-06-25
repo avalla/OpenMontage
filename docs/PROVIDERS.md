@@ -773,8 +773,10 @@ image/gif/video output via `/view` into `output_dir`.
 - **Not zero-setup.** You need ComfyUI installed, running, with the specific custom nodes and
   model checkpoints your workflow requires already in place — there's no model catalog or
   templating here, unlike RunComfy's `model_id` gateway.
-- **No Layer-3 prompting skill yet** (`agent_skills` is empty) — prompting technique depends
-  entirely on whichever model your workflow uses; check that model's own documentation.
+- **The `comfyui-local` Layer-3 skill** (`.agents/skills/comfyui-local/SKILL.md`) covers workflow
+  export, the `overrides` mechanism, and common `node_errors` causes — but actual model-specific
+  prompting technique still depends entirely on whichever model your workflow uses; check that
+  model's own documentation.
 - Cost is always `$0` (your own hardware/electricity); `estimate_cost()` returns `0.0`.
 
 ---

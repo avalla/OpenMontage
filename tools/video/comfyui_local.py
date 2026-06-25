@@ -62,6 +62,11 @@ class ComfyUILocal(BaseTool):
     version = "0.1.0"
     tier = ToolTier.GENERATE
     capability = "video_generation"
+    # The submitted workflow decides the actual output type — a text-to-image
+    # graph produces images, not video. Listed here so image_selector can
+    # find this tool too; see get_by_capability()'s docstring for why this
+    # doesn't change capability_catalog()/preflight counts.
+    secondary_capabilities = ["image_generation"]
     provider = "comfyui"
     stability = ToolStability.EXPERIMENTAL
     execution_mode = ExecutionMode.SYNC
@@ -83,7 +88,7 @@ class ComfyUILocal(BaseTool):
         "http://127.0.0.1:8188 (e.g. when calling from a different machine "
         "than the one running ComfyUI)."
     )
-    agent_skills: list[str] = []  # no Layer-3 skill yet — workflow JSON is supplied by the caller
+    agent_skills = ["comfyui-local"]
 
     capabilities = [
         "generate_video",

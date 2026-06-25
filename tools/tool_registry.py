@@ -141,8 +141,23 @@ class ToolRegistry:
         return [t for t in self._tools.values() if t.tier == tier]
 
     def get_by_capability(self, capability: str) -> list[BaseTool]:
-        """Get all tools registered for a top-level capability family."""
-        return [t for t in self._tools.values() if t.capability == capability]
+        """Get all tools registered for a top-level capability family.
+
+        Matches a tool's primary `capability` OR its opt-in
+        `secondary_capabilities` — so a tool like comfyui_local (primary
+        video_generation, but capable of image output depending on the
+        workflow submitted) is still discoverable via
+        get_by_capability("image_generation"), which is what selectors
+        (image_selector, video_selector) call to build their candidate
+        list. Deliberately not reflected in capability_catalog()/
+        provider_menu_summary() — see the secondary_capabilities docstring
+        in base_tool.py for why those stay primary-capability-only.
+        """
+        return [
+            t
+            for t in self._tools.values()
+            if t.capability == capability or capability in t.secondary_capabilities
+        ]
 
     def get_by_provider(self, provider: str) -> list[BaseTool]:
         """Get all tools backed by a specific provider."""

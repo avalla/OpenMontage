@@ -150,6 +150,18 @@ class BaseTool(ABC):
 
     # --- Capabilities ---
     capability: str = "generic"
+    # Additional top-level capability families this tool should also be
+    # discoverable under, beyond its primary `capability`. Opt-in, defaults
+    # to empty so it's a no-op for every existing tool. Only affects
+    # registry.get_by_capability() (so selectors like image_selector pick
+    # the tool up too) — deliberately NOT applied in capability_catalog()
+    # or provider_menu_summary(), so "N of M configured" counts and the
+    # tool inventory in docs/ARCHITECTURE.md stay keyed to the one primary
+    # capability per tool. Example: comfyui_local's workflow can produce
+    # images depending on what graph is submitted, but its primary
+    # capability is video_generation — secondary_capabilities lets
+    # image_selector still find it without double-counting it everywhere.
+    secondary_capabilities: list[str] = []
     provider: str = "openmontage"
     capabilities: list[str] = []
     input_schema: dict = {}
@@ -233,6 +245,7 @@ class BaseTool(ABC):
             "version": self.version,
             "tier": self.tier.value,
             "capability": self.capability,
+            "secondary_capabilities": self.secondary_capabilities,
             "provider": self.provider,
             "stability": self.stability.value,
             "status": self.get_status().value,

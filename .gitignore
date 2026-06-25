@@ -82,6 +82,8 @@ node_modules/
 # Remotion build output and copied project assets (regenerable at render time)
 remotion-composer/out/
 remotion-composer/public/*
+# Scratch render-debug prop dumps left behind by ad-hoc `npx remotion render` debugging
+remotion-composer/.debug_props*.json
 # But keep demo props (shipped with the project for zero-key demos)
 !remotion-composer/public/demo-props/
 # Ignore test/scratch compositions in demo-props (keep only curated demos)

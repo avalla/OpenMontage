@@ -23,7 +23,7 @@ For model-specific tips, see the linked guides below.
 | **Runway Gen-4** | [Runway Prompting Guide](https://help.runwayml.com/hc/en-us/articles/39789879462419-Gen-4-Video-Prompting-Guide) | "Focus on motion, not appearance." One scene per clip. Simplicity wins. |
 | **Kling 2.6** | [Kling Prompt Guide](https://fal.ai/learn/devs/kling-2-6-pro-prompt-guide) | 4-part structure. Supports `++emphasis++` syntax for key elements. |
 | **Wan 2.1 / CogVideoX** | Use this generic guide | No official prompt guide. Standard cinematographic vocabulary works well. |
-| **ComfyUI Local** (`comfyui_local`) | Depends on the workflow's underlying model — match the row above for that model (e.g. AnimateDiff/SVD/LTX nodes) | The prompt text lives inside the workflow JSON's text-encoder node (set via `overrides`, e.g. `{"6.inputs.text": "..."}`), not a top-level `prompt` field. No model-specific Layer-3 skill is wired up yet. |
+| **ComfyUI Local** (`comfyui_local`) | `.agents/skills/comfyui-local/` for the `overrides` mechanism and troubleshooting; match the row above for the workflow's underlying model (e.g. AnimateDiff/SVD/LTX nodes) for actual prompt wording | The prompt text lives inside the workflow JSON's text-encoder node (set via `overrides`, e.g. `{"6.inputs.text": "..."}`), not a top-level `prompt` field. |
 
 ## Order Matters
 
