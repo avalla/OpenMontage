@@ -30,6 +30,7 @@ def _load_dotenv() -> None:
     env_path = Path(__file__).resolve().parent.parent / ".env"
     if not env_path.is_file():
         return
+    import re
     with open(env_path, encoding="utf-8", errors="ignore") as f:
         for line in f:
             line = line.strip()
@@ -37,15 +38,20 @@ def _load_dotenv() -> None:
                 continue
             key, _, value = line.partition("=")
             key = key.strip()
-            # Strip inline comments on the raw (unstripped) value: a '#' that
-            # is the first character or preceded by whitespace starts a
-            # comment. Must run before .strip() — once leading whitespace is
-            # gone, "KEY=   # comment" looks like a value starting with '#'
-            # instead of an empty value with a trailing comment.
-            hash_idx = value.find("#")
-            if hash_idx != -1 and (hash_idx == 0 or value[hash_idx - 1].isspace()):
-                value = value[:hash_idx]
-            value = value.strip().strip("'\"")
+            value = value.strip()
+            # Quoted value: take the content inside the quotes verbatim
+            # (so a '#' inside quotes isn't mistaken for a comment marker).
+            if value[:1] in ("'", '"'):
+                quote = value[0]
+                end = value.find(quote, 1)
+                value = value[1:end] if end != -1 else value[1:]
+            else:
+                # Strip an inline comment ('#' at line start or after
+                # whitespace) so "VAR=   # note" yields "" not "# note".
+                match = re.search(r"(^|\s)#", value)
+                if match:
+                    value = value[: match.start()]
+                value = value.strip()
             if key and key not in os.environ:
                 os.environ[key] = value
 
