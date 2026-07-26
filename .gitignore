@@ -15,6 +15,10 @@ pyvenv.cfg
 /lib64
 /COPYING
 
+# Local model downloads (e.g. Piper TTS voices, fetched at runtime — not source)
+*.onnx
+*.onnx.json
+
 # Test/IDE
 .pytest_cache/
 .mypy_cache/
@@ -86,6 +90,9 @@ node_modules/
 
 # Remotion build output and copied project assets (regenerable at render time)
 remotion-composer/out/
+# Project-local bespoke ("atelier") compositions — hand-authored per video,
+# throwaway and regenerable. Keeps the shared src/ free of one-off scenes.
+remotion-composer/projects/
 remotion-composer/public/*
 # Scratch render-debug prop dumps left behind by ad-hoc `npx remotion render` debugging
 remotion-composer/.debug_props*.json
@@ -95,3 +102,9 @@ remotion-composer/.debug_props*.json
 remotion-composer/public/demo-props/test-*
 remotion-composer/public/demo-props/talking-head-*
 remotion-composer/public/demo-props/caption-burn-*
+
+venv/
+.venv/
+
+# Backlot local cache (thumbnails)
+.backlot/

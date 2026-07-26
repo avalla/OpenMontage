@@ -28,7 +28,15 @@ function resolveAsset(src: string): string {
   // Absolute paths (Unix: /foo, Windows: C:\foo or C:/foo) — convert to file:// URI
   // staticFile() only accepts relative paths within public/, so absolute paths must bypass it
   if (src.startsWith("/") || /^[A-Za-z]:[\\/]/.test(src)) {
-    return `file:///${src.replace(/\\/g, "/")}`;
+    const posix = src.replace(/\\/g, "/");
+    // POSIX absolute paths already have a leading "/" — file:// + posix
+    // gives exactly three slashes. Windows drive paths (C:/...) need the
+    // extra slash added explicitly. Do not merge these branches — adding
+    // "file:///" unconditionally double-slashes POSIX paths (file:////...).
+    if (posix.startsWith("/")) {
+      return `file://${posix}`;
+    }
+    return `file:///${posix}`;
   }
   return staticFile(src);
 }
