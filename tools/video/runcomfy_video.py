@@ -6,6 +6,7 @@ import time
 from typing import Any
 
 from tools._runcomfy_cli import (
+    MEDIA_HOST_SCHEMA,
     RunComfyCLIError,
     cli_available,
     get_token,
@@ -47,14 +48,21 @@ class RunComfyVideo(BaseTool):
     )
     agent_skills = []
 
-    capabilities = ["generate_video", "text_to_video", "image_to_video"]
+    capabilities = ["generate_video", "text_to_video", "image_to_video", "reference_to_video"]
     supports = {
         "seed": "model-dependent",
         "duration_seconds": "model-dependent",
         "image_to_video": "model-dependent",
+        "reference_to_video": "model-dependent",
+        "local_media_upload": True,
     }
     best_for = [
         "running a specific ComfyUI-backed video model hosted on RunComfy by model_id",
+        "reference-to-video: keeping characters/props/style consistent across shots from "
+        "reference images, motion/camera from reference clips, voice from reference audio "
+        "(e.g. minimax/minimax-h3-max/reference-to-video, "
+        "bytedance/seedance-2.5/reference-to-video/720p, "
+        "kling/kling-video-o3/standard/reference-to-video, wan-ai/wan-2.7/reference-to-video)",
         "access to community/specialty video models (AnimateDiff, LTX, etc.) not offered by other providers",
     ]
     not_good_for = [
@@ -79,9 +87,16 @@ class RunComfyVideo(BaseTool):
                 "description": (
                     "Payload matching the chosen model's own input schema "
                     "(commonly includes 'prompt', sometimes 'seed', 'duration', "
-                    "or an input image URL/path for image-to-video — check the model page)."
+                    "or an input image URL/path for image-to-video — check the model page). "
+                    "Reference-to-video field names differ per model: MiniMax H3 uses "
+                    "reference_images/reference_videos/reference_audios, Seedance 2.5 uses "
+                    "images/videos/audios, Kling O3 uses images + video, Wan 2.7 uses "
+                    "reference_image_urls/reference_video_urls. Inspect with "
+                    "`runcomfy models get <model_id>`. Media values may be https URLs or "
+                    "local file paths (uploaded via media_host)."
                 ),
             },
+            "media_host": MEDIA_HOST_SCHEMA,
             "output_dir": {"type": "string", "default": "runcomfy_output"},
             "timeout_seconds": {"type": "integer", "default": 1200},
         },
@@ -92,7 +107,11 @@ class RunComfyVideo(BaseTool):
     )
     retry_policy = RetryPolicy(max_retries=1, retryable_errors=["timeout"])
     idempotency_key_fields = ["model_id", "inputs"]
-    side_effects = ["calls the RunComfy API via the runcomfy CLI", "writes output files to output_dir"]
+    side_effects = [
+        "calls the RunComfy API via the runcomfy CLI",
+        "uploads local media files in inputs to fal.ai or litterbox (public URL)",
+        "writes output files to output_dir",
+    ]
     user_visible_verification = ["Inspect generated clip for relevance, motion quality, and duration"]
 
     def get_status(self) -> ToolStatus:
@@ -125,7 +144,11 @@ class RunComfyVideo(BaseTool):
         start = time.time()
         try:
             result = run_model(
-                model_id, model_inputs, output_dir, timeout_seconds=timeout_seconds
+                model_id,
+                model_inputs,
+                output_dir,
+                timeout_seconds=timeout_seconds,
+                media_host=inputs.get("media_host", "auto"),
             )
         except RunComfyCLIError as e:
             return ToolResult(success=False, error=str(e))
@@ -147,6 +170,7 @@ class RunComfyVideo(BaseTool):
                 "model_id": model_id,
                 "output": files[0],
                 "response": result["response"],
+                "uploaded_media": result["uploaded_media"],
                 "required_agent_skills": skills_for_model_id(model_id),
             },
             artifacts=files,

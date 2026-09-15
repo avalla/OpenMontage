@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from tools._runcomfy_cli import (
+    MEDIA_HOST_SCHEMA,
     RunComfyCLIError,
     cli_available,
     get_token,
@@ -82,6 +83,7 @@ class RunComfyImage(BaseTool):
                     "'negative_prompt', or an input image URL/path — check the model page)."
                 ),
             },
+            "media_host": MEDIA_HOST_SCHEMA,
             "output_dir": {"type": "string", "default": "runcomfy_output"},
             "timeout_seconds": {"type": "integer", "default": 600},
         },
@@ -125,7 +127,11 @@ class RunComfyImage(BaseTool):
         start = time.time()
         try:
             result = run_model(
-                model_id, model_inputs, output_dir, timeout_seconds=timeout_seconds
+                model_id,
+                model_inputs,
+                output_dir,
+                timeout_seconds=timeout_seconds,
+                media_host=inputs.get("media_host", "auto"),
             )
         except RunComfyCLIError as e:
             return ToolResult(success=False, error=str(e))
@@ -147,6 +153,7 @@ class RunComfyImage(BaseTool):
                 "model_id": model_id,
                 "output": files[0],
                 "response": result["response"],
+                "uploaded_media": result["uploaded_media"],
                 "required_agent_skills": skills_for_model_id(model_id),
             },
             artifacts=files,
