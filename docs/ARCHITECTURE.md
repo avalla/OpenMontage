@@ -45,7 +45,7 @@ OpenMontage/
 │   ├── tool_registry.py    # Auto-discovery singleton registry
 │   ├── cost_tracker.py     # Budget governance (estimate → reserve → reconcile)
 │   ├── analysis/           # Transcription, scene detection, frame sampling, video understanding
-│   ├── audio/              # TTS (ElevenLabs, OpenAI, Piper), music gen, mixing, enhancement
+│   ├── audio/              # TTS (ElevenLabs, OpenAI, Piper, Azure, Google), music gen, mixing, enhancement
 │   ├── avatar/             # Talking head animation, lip sync
 │   ├── enhancement/        # Upscale, bg removal, face enhance/restore, color grading
 │   ├── graphics/           # Image gen (FLUX, GPT Image, Recraft, local diffusion), stock, diagrams, code snippets, math animation
@@ -145,6 +145,7 @@ Three selector tools abstract multi-provider capabilities:
 | `tts_selector` | Text-to-speech | Ranks discovered providers by task fit, quality, control, reliability, cost, latency, and continuity |
 | `image_selector` | Image generation | Ranks discovered providers from the live registry; no hardcoded provider order |
 | `video_selector` | Video generation | Ranks discovered providers from the live registry; user preference is respected when explicitly provided |
+| `atlas_image` / `atlas_video` | Atlas Cloud generation | Exposes exact per-model route catalogs for image generation/editing and text/image/reference/video-edit generation |
 
 Selectors route based on: user preference when explicitly set, then scored ranking across available providers. They adapt input schemas between providers transparently.
 
@@ -153,9 +154,9 @@ Selectors route based on: user preference when explicitly set, then scored ranki
 > Generated against the live registry (`registry.capability_catalog()`) rather than hand-maintained
 > from memory — re-run that call after adding/removing tools to keep these counts honest.
 
-**Analysis (11):** audio_energy, audio_probe, composition_validator, face_tracker, frame_sampler, scene_detect, transcriber (WhisperX), transcript_fetcher, video_analyzer, video_understand (CLIP/BLIP-2), visual_qa
+**Analysis (12):** audio_energy, audio_probe, azure_stt, composition_validator, face_tracker, frame_sampler, scene_detect, transcriber (WhisperX), transcript_fetcher, video_analyzer, video_understand (CLIP/BLIP-2), visual_qa
 
-**Audio — TTS (6):** elevenlabs_tts, google_tts, openai_tts, doubao_tts, piper_tts, tts_selector
+**Audio — TTS (7):** elevenlabs_tts, google_tts, openai_tts, doubao_tts, piper_tts, azure_tts, tts_selector
 
 **Audio — Music Generation (3):** music_gen, runcomfy_music, suno_music
 
@@ -407,6 +408,7 @@ All config is validated via Pydantic models in `lib/config_model.py`.
 | Variable | Used By | Purpose |
 |----------|---------|---------|
 | `ELEVENLABS_API_KEY` | elevenlabs_tts, music_gen | TTS, music, sound effects |
+| `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION` | azure_stt, azure_tts | Azure AI Speech cloud transcription + neural TTS (one resource, both directions) |
 | `OPENAI_API_KEY` | openai_tts, openai_image | TTS fallback, GPT Image 2 |
 | `XAI_API_KEY` | grok_image, grok_video | Grok image editing/generation, Grok video generation |
 | `FAL_KEY` (or `FAL_AI_API_KEY`) | flux_image, kling_video, veo_video, minimax_video, recraft_image, seedance_video, image_gen | fal.ai hosted models (FLUX, Veo, Kling, MiniMax, Recraft, Seedance) |
