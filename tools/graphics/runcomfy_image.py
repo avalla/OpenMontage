@@ -112,8 +112,13 @@ class RunComfyImage(BaseTool):
         return skills_for_model_id(model_id)
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
-        model_id = inputs["model_id"]
-        model_inputs = inputs["inputs"]
+        model_id = inputs.get("model_id")
+        model_inputs = inputs.get("inputs")
+        if not model_id or not isinstance(model_inputs, dict):
+            return ToolResult(
+                success=False,
+                error="runcomfy requires 'model_id' and an 'inputs' object (see runcomfy.com/models).",
+            )
         output_dir = inputs.get("output_dir", "runcomfy_output")
         timeout_seconds = inputs.get("timeout_seconds", 600)
 
